@@ -3,8 +3,8 @@
 // Used by Resource.rc
 //
 #define IDD_DIALOG1                     101
-#define IDC_EDIT1                       1001
-#define IDC_EDIT2                       1002
+#define IDC_LIST1                       1001
+#define IDC_LIST                        1001
 
 // Next default values for new objects
 // 

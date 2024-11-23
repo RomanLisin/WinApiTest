@@ -13,6 +13,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ListBoxAPI", "ListBoxAPI\Li
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EditControlAPI", "EditControlAPI\EditControlAPI.vcxproj", "{99516285-5D2E-409B-936A-6C139F10079A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleKeyPressInfo", "SimpleKeyPressInfo\SimpleKeyPressInfo.vcxproj", "{73211114-8F68-4156-BF11-658C9EB07639}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClassStructWnd", "ClassStructWnd\ClassStructWnd.vcxproj", "{ADDFF21F-CC68-4D1E-A65F-A3B75CF2B151}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -61,6 +65,22 @@ Global
 		{99516285-5D2E-409B-936A-6C139F10079A}.Release|x64.Build.0 = Release|x64
 		{99516285-5D2E-409B-936A-6C139F10079A}.Release|x86.ActiveCfg = Release|Win32
 		{99516285-5D2E-409B-936A-6C139F10079A}.Release|x86.Build.0 = Release|Win32
+		{73211114-8F68-4156-BF11-658C9EB07639}.Debug|x64.ActiveCfg = Debug|x64
+		{73211114-8F68-4156-BF11-658C9EB07639}.Debug|x64.Build.0 = Debug|x64
+		{73211114-8F68-4156-BF11-658C9EB07639}.Debug|x86.ActiveCfg = Debug|Win32
+		{73211114-8F68-4156-BF11-658C9EB07639}.Debug|x86.Build.0 = Debug|Win32
+		{73211114-8F68-4156-BF11-658C9EB07639}.Release|x64.ActiveCfg = Release|x64
+		{73211114-8F68-4156-BF11-658C9EB07639}.Release|x64.Build.0 = Release|x64
+		{73211114-8F68-4156-BF11-658C9EB07639}.Release|x86.ActiveCfg = Release|Win32
+		{73211114-8F68-4156-BF11-658C9EB07639}.Release|x86.Build.0 = Release|Win32
+		{ADDFF21F-CC68-4D1E-A65F-A3B75CF2B151}.Debug|x64.ActiveCfg = Debug|x64
+		{ADDFF21F-CC68-4D1E-A65F-A3B75CF2B151}.Debug|x64.Build.0 = Debug|x64
+		{ADDFF21F-CC68-4D1E-A65F-A3B75CF2B151}.Debug|x86.ActiveCfg = Debug|Win32
+		{ADDFF21F-CC68-4D1E-A65F-A3B75CF2B151}.Debug|x86.Build.0 = Debug|Win32
+		{ADDFF21F-CC68-4D1E-A65F-A3B75CF2B151}.Release|x64.ActiveCfg = Release|x64
+		{ADDFF21F-CC68-4D1E-A65F-A3B75CF2B151}.Release|x64.Build.0 = Release|x64
+		{ADDFF21F-CC68-4D1E-A65F-A3B75CF2B151}.Release|x86.ActiveCfg = Release|Win32
+		{ADDFF21F-CC68-4D1E-A65F-A3B75CF2B151}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
