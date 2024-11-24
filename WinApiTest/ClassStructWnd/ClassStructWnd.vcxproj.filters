@@ -32,4 +32,9 @@
   <ItemGroup>
     <None Include="ANI\3work.ani" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="ICO\chill.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

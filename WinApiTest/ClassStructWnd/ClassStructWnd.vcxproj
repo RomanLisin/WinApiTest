@@ -138,6 +138,9 @@
   <ItemGroup>
     <None Include="ANI\3work.ani" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="ICO\chill.ico" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

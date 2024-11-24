@@ -5,25 +5,32 @@
 int faillingStep = 0;
 int wWidth{}, wHeight{}, x{}, y{};
 	HDC hdc{};
-	CHAR* sz_buff[256] = {};
+	CHAR sz_buff[256] = {};
 	HWND hwnd{};
 	HCURSOR hCursor = NULL;
+	MSG msg{};
 BOOL WINAPI /*говорит о том, что вызываемый объект будет сам за собой очищать стэк*/
 wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, INT nCmdShow)
 {
-	MSG msg{};
 	WNDCLASSEX wClass{ sizeof(WNDCLASSEX) };//<-с помощью агрегатной инициализации задaём//* Размер класса, это делать обязательно, можно через доступ к полю
 	wClass.cbClsExtra = 0;  // эти два поля отвечают за дополнительное выделение памяти  // CountBytes
 	wClass.cbWndExtra = 0;  // чтобы можно было передать информацию в класс окна, чтобы потом можно было воспользоваться этой информацией, задается размер в байтах
 	wClass.hbrBackground = reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));	     //* Кисть  Оператор reinterpret_cast ->  https://learn.microsoft.com/ru-ru/cpp/cpp/reinterpret-cast-operator?view=msvc-170
 	wClass.hCursor = LoadCursor(NULL, IDC_ARROW);										 //* Курсор
 	wClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);										 //* Иконка большая
-	wClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);									 //* Иконка маленькая
+	wClass.hIconSm = LoadIcon(NULL,IDI_APPLICATION);									 //* Иконка маленькая
 	wClass.hInstance = hInstance;															 //* Приложение
 	wClass.lpfnWndProc = [](HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)->LRESULT	 //* Процедура     // Что означает [] (лямбда-функция)? https://docs.google.com/document/d/1_THS_7VJuPY20n1fowRICpFB0hsZYURYKrG0dG4Z3uc/edit?usp=sharing
 		{
 			switch (uMsg)
 			{
+			case WM_INITDIALOG:
+			{
+
+				HICON hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON1));
+				SendMessage(hwnd, WM_SETICON, 0, (LPARAM)hIcon);
+				break;
+			}
 			case WM_CREATE:
 			{
 				hCursor = LoadCursorFromFile("ANI\\3work.ani");
@@ -59,18 +66,29 @@ wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, INT nCmdShow)
 			{
 				wWidth = LOWORD(lParam);
 				wHeight = HIWORD(lParam);
-				CHAR title[100];
-				snprintf(title, sizeof(title), "X %d x Y %d : W %d x H %d", x, y, wWidth, wHeight);
-				SetWindowText(hWnd, title);
+				//CHAR title[100];
+				snprintf(sz_buff, sizeof(sz_buff), " X %d x Y %d : W %d x H %d", x, y, wWidth, wHeight);
+				SetWindowText(hWnd, sz_buff);
 				break;
 			}
 			case WM_MOVE:
 			{
 				x = LOWORD(lParam);
 				y = HIWORD(lParam);
-				CHAR title[200];
-				snprintf(title, sizeof(title), "X %d x Y %d : W %d x H %d", x, y, wWidth, wHeight);
-				SetWindowText(hWnd, title);
+				//CHAR title[200];
+				snprintf(sz_buff, sizeof(sz_buff), " X %d x Y %d : W %d x H %d", x, y, wWidth, wHeight);
+				SetWindowText(hWnd, sz_buff);
+				break;
+			}
+			case WM_MOVING: {
+				// Динамическое обновление заголовка во время перетаскивания
+				RECT* rect = reinterpret_cast<RECT*>(lParam);
+				x = rect->left;
+				y = rect->top;
+
+				//wchar_t title[200];
+				snprintf(sz_buff, sizeof(sz_buff), " X %d x Y %d : W %d x H %d", x, y, wWidth, wHeight);
+				SetWindowText(hwnd, sz_buff);
 				break;
 			}
 			case WM_SETCURSOR:
@@ -82,14 +100,24 @@ wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, INT nCmdShow)
 				}
 				break;
 			}
-			//return 0;
-			//case WM_PAINT:
-			//{
-			//	hdc = GetDC(hWnd);
-			//	DrawCaption(hWnd, hdc, NULL, printf("%d - %d", wWidth, wHeight));
-			//	//hdc->unused
-
-			//}
+			return 0;
+			case WM_PAINT:
+			{
+				PAINTSTRUCT ps;
+				HDC hdc = BeginPaint(hwnd, &ps);
+				
+				// отрисовка заголовка
+				RECT rect = { 50,0, wWidth, 150 };
+				SetBkColor(hdc, RGB(30, 30, 30));
+				SetTextColor(hdc, RGB(255, 255, 255));
+				//TextOut(hdc, 50, 0, sz_buff, snprintf(sz_buff, sizeof(sz_buff), " X %d x Y %d : W %d x H %d", x, y, wWidth, wHeight));
+				DrawText(hdc, sz_buff, -1, &rect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+				//hdc = GetDC(hWnd);
+				//DrawCaption(hWnd, hdc, NULL, snprintf(sz_buff, sizeof(sz_buff), " X %d x Y %d : W %d x H %d", x, y, wWidth, wHeight));
+				//hdc->unused
+				EndPaint(hwnd, &ps);
+				break;
+			}
 			//return 0;
 			//case WM_TIMER:
 			//{
@@ -122,6 +150,27 @@ wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, INT nCmdShow)
 			//	SetTimer(hWnd, TIMER_ID, 30, NULL); // Устанавливаем таймер для анимации
 			//	return 0; // Блокируем стандартное закрытие
 			//}
+			case WM_NCLBUTTONDOWN: {
+				if (wParam == HTCAPTION) {
+					// Обновляем положение перед началом перетаскивания
+					RECT rect;
+					GetWindowRect(hwnd, &rect);
+					x = rect.left;
+					y = rect.top;
+
+					//wchar_t title[200];
+					snprintf(sz_buff, sizeof(sz_buff), " X %d x Y %d : W %d x H %d", x, y, wWidth, wHeight);
+					SetWindowText(hwnd,sz_buff);
+				}
+				return DefWindowProc(hwnd, uMsg, wParam, lParam);
+			}
+			case WM_LBUTTONDOWN:
+			{
+				//перетаскивание окна
+				PostMessage(hwnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
+				break;
+			}
+
 			case WM_DESTROY:
 			{
 				if (hCursor)
@@ -147,11 +196,13 @@ wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, INT nCmdShow)
 		return EXIT_FAILURE;
 	}
 
-	if ((hwnd = CreateWindowEx(NULL,    //  Ex-style
-		wClass.lpszClassName, "Заголовок!",
+	hwnd = CreateWindowEx(NULL,    //  Ex-style
+		wClass.lpszClassName, "",  // второй заголовок будет обновляться динамически
+		//WS_POPUP /*необычное окно*/, CW_USEDEFAULT, CW_USEDEFAULT,
 		WS_OVERLAPPEDWINDOW /*обычное окно*/, 0, 0,
-		600 /*ширин*/, 600 /*высота*/, NULL, NULL, wClass.hInstance, NULL))==      //* Создание окна
-		INVALID_HANDLE_VALUE)
+		wWidth /*ширин*/, wHeight /*высота*/, NULL, NULL, wClass.hInstance, NULL); // ==      //* Создание окна
+		//INVALID_HANDLE_VALUE)
+		if(!hwnd)
 	{
 		MessageBox(NULL, "Window criaton failed", "", MB_OK | MB_ICONERROR);
 		return EXIT_FAILURE;
