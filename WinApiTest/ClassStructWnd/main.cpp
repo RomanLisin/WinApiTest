@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include<cstdio>
 #include<string>
+#include"resource.h"
 #define TIMER_ID 1
 int faillingStep = 0;
 int wWidth{}, wHeight{}, x{}, y{};
