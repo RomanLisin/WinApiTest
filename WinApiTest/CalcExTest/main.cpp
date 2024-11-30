@@ -38,6 +38,8 @@ CONST INT g_i_BUTTON_START_X = g_i_START_X;
 CONST INT g_i_BUTTON_START_Y = g_i_START_X + g_i_SCREEN_HEIGHT + g_i_INTERVAL;
 
 HWND g_hButtons[16]; // Массив для кнопок 0-9 и other
+HWND eHwnd;
+
 
 INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -99,16 +101,15 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 }
 INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-
 	switch (uMsg)
 	{
 		case WM_CREATE:
 		{
-			HWND hEdit = CreateWindowEx
+		eHwnd = CreateWindowEx
 			(
 				NULL, "Edit", "0",
 				WS_CHILD | WS_VISIBLE | WS_BORDER | ES_RIGHT,
-				10, 10,
+				g_i_START_X, g_i_START_Y,//10, 10,
 				400, 22,
 				hwnd,
 				(HMENU)1000,
@@ -127,7 +128,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 				INT row = i / 4; // номер строки
 				INT col = i % 4; // номер столбца
-
+				
 				// расчёт позиции кнопки
 				INT x = g_i_BUTTON_START_X + col * (g_i_BUTTON_SIZE + g_i_INTERVAL);
 				INT y = g_i_BUTTON_START_Y + row * (g_i_BUTTON_SIZE + g_i_INTERVAL);
@@ -147,22 +148,59 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		break;
-			case WM_COMMAND:
-				if (HIWORD(wParam) == BN_CLICKED)
-				{
-					INT buttonId = LOWORD(wParam);
-					CHAR buffer[256];
-					sprintf_s(buffer, "Button %d clicked", buttonId);
-					MessageBox(hwnd, buffer, "Info", MB_OK);
-				}
-				break;
-			case WM_DESTROY:
-				PostQuitMessage(0);
-				break;
-			case WM_CLOSE:
-				DestroyWindow(hwnd);
-				break;
-			default: return DefWindowProc(hwnd, uMsg, wParam, lParam);
+		case WM_COMMAND:
+			if (HIWORD(wParam) == BN_CLICKED)
+			{
+				INT buttonId = LOWORD(wParam);
+				CHAR buffer[256];
+				sprintf_s(buffer, "Button %d clicked", buttonId);
+				MessageBox(hwnd, buffer, "Info", MB_OK);
+			}
+			break;
+		case WM_GETMINMAXINFO:
+		{
+			MINMAXINFO* nmi = (MINMAXINFO*)lParam;
+			nmi->ptMinTrackSize.x = g_i_START_X*3 + (g_i_BUTTON_SIZE + g_i_INTERVAL)*4;
+			nmi->ptMinTrackSize.y = 300;
+		}
+			break;
+		case WM_SIZE:
+		{
+			RECT wRect, eRect;
+			INT width, height, x,y;
+			GetClientRect(hwnd, &wRect);   // GetWindowRect(hwnd,&rect) don't work
+			GetClientRect(eHwnd, &eRect);
+			width = wRect.right - wRect.left-g_i_START_X*2;
+			height = g_i_SCREEN_HEIGHT;
+			x = g_i_START_X, y = g_i_START_Y;
+			SendMessage(eHwnd, WM_SIZE, 0, MAKELPARAM(width, height));
+
+			SetWindowPos(eHwnd, NULL, x, y, width, height, SWP_NOZORDER);
+			
+			for (INT i = 0; i < 16; ++i)
+			{
+				INT row = i / 4; // номер строки
+				INT col = i % 4; // номер столбца
+				// расчёт позиции кнопки
+				INT bWidth = ((wRect.right - wRect.left) - g_i_BUTTON_START_X*2) / 4;
+				INT wInterval = bWidth * 0.1;
+				bWidth -= wInterval;
+				INT bHeight = ((wRect.bottom - wRect.top) - g_i_BUTTON_START_X * 2 - g_i_SCREEN_HEIGHT) / 4;
+				INT hInterval = bHeight * 0.1;
+				bHeight -= hInterval;
+				 x = g_i_BUTTON_START_X + col * (bWidth+wInterval);
+				 y = g_i_START_X + g_i_SCREEN_HEIGHT + hInterval + row * (bHeight + hInterval);
+				MoveWindow(g_hButtons[i], x, y, bWidth, bHeight, TRUE);  // the same
+			}
+		}
+		break;
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			break;
+		case WM_CLOSE:
+			DestroyWindow(hwnd);
+			break;
+		default: return DefWindowProc(hwnd, uMsg, wParam, lParam);
 		}
 	return FALSE;
 }
