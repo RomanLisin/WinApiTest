@@ -1,5 +1,9 @@
 #include<Windows.h>
 #include<cstdio>
+#include<string>
+#include<stack>
+#include<cctype>
+#include<cmath>
 
 #define IDC_EDIT_DISPLAY 999
 #define IDC_BUTTON_0	1000
@@ -40,6 +44,11 @@ CONST INT g_i_BUTTON_START_Y = g_i_START_X + g_i_SCREEN_HEIGHT + g_i_INTERVAL;
 HWND g_hButtons[16]; // Массив для кнопок 0-9 и other
 HWND eHwnd;
 HFONT g_hFont = NULL;
+
+std::string g_sExpression; // хранение текущего выражения
+
+double EvaluateExpression(const std::string& expression);
+
 void DrawRoundedButton(HDC hdc, RECT rect, int radius, const char* text);
 
 INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -153,9 +162,41 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (HIWORD(wParam) == BN_CLICKED)
 			{
 				INT buttonId = LOWORD(wParam);
-				CHAR buffer[256];
+				/*CHAR buffer[256];
 				sprintf_s(buffer, "Button %d clicked", buttonId);
-				MessageBox(hwnd, buffer, "Info", MB_OK);
+				MessageBox(hwnd, buffer, "Info", MB_OK);*/
+				if (buttonId >= IDC_BUTTON_0 && buttonId <= IDC_BUTTON_POINT)
+				{
+					// Цифры и точка
+					CHAR label[2];
+					GetWindowText((HWND)lParam, label, sizeof(label));
+					g_sExpression += label;
+				}
+				else if (buttonId >= IDC_BUTTON_PLUS && buttonId <= IDC_BUTTON_SLASH)
+				{
+					// операторы
+					CHAR label[2];
+					GetWindowText((HWND)lParam, label, sizeof(label));
+					g_sExpression += label;
+				}
+				else if (buttonId == IDC_BUTTON_EQUAL)
+				{
+					// calculate expression
+					try
+					{
+						double result = EvaluateExpression(g_sExpression);
+						g_sExpression = std::to_string(result);
+					}
+					catch (const std::exception& e)
+					{
+						g_sExpression = "Error";
+					}
+				}
+				else if (buttonId == IDC_BUTTON_CLR)
+				{
+					g_sExpression.clear();
+				}
+				SetWindowText(eHwnd, g_sExpression.c_str());
 			}
 			break;
 		case WM_GETMINMAXINFO:
@@ -282,4 +323,12 @@ void DrawRoundedButton(HDC hdc, RECT rect, int radius, const char* text)
 	SelectObject(hdc, oldPen);
 	DeleteObject(hBrush);
 	DeleteObject(hPen);
+}
+
+double EvaluateExpression(const std::string& expression)
+{
+	return 77777.777;
+	/*std::istringstream iss(expression);
+	std::stack<double> values;
+	std::stack<char> ops;*/
 }
