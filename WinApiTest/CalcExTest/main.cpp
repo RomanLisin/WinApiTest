@@ -39,6 +39,7 @@ CONST INT g_i_BUTTON_START_Y = g_i_START_X + g_i_SCREEN_HEIGHT + g_i_INTERVAL;
 
 HWND g_hButtons[16]; // Массив для кнопок 0-9 и other
 HWND eHwnd;
+HFONT g_hFont = NULL;
 void DrawRoundedButton(HDC hdc, RECT rect, int radius, const char* text);
 
 INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -105,7 +106,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		case WM_CREATE:
 		{
-		eHwnd = CreateWindowEx
+			eHwnd = CreateWindowEx
 			(
 				NULL, "Edit", "0",
 				WS_CHILD | WS_VISIBLE | WS_BORDER | ES_RIGHT,
@@ -137,7 +138,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				g_hButtons[i] = CreateWindowEx
 				(
 					0, "Button", buttonLabels[i],
-					WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON| BS_OWNERDRAW,
+					WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON| BS_OWNERDRAW,    //   если используем кастомные варианты, если дефолтные последний комментируем
 					x, y,
 					g_i_BUTTON_SIZE, g_i_BUTTON_SIZE,
 					hwnd,
@@ -166,6 +167,8 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		case WM_SIZE:
 		{
+			INT bHeight = ((HIWORD(lParam) - g_i_BUTTON_START_X * 2 - g_i_SCREEN_HEIGHT) / 4) * 0.6;
+			int fontSize = -MulDiv(bHeight, 72, GetDeviceCaps(GetDC(hwnd), LOGPIXELSY)); // Высота шрифта в логических единицах
 			RECT wRect, eRect;
 			INT width, height, x,y;
 			GetClientRect(hwnd, &wRect);   // GetWindowRect(hwnd,&rect) don't work
@@ -192,6 +195,33 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				 y = g_i_START_X + g_i_SCREEN_HEIGHT + hInterval + row * (bHeight + hInterval);
 				MoveWindow(g_hButtons[i], x, y, bWidth, bHeight, TRUE);  // the same
 			}
+			if (g_hFont) 
+			{
+				DeleteObject(g_hFont); // удаляем старый шрифт
+			}
+
+			g_hFont = CreateFont(
+				fontSize,                // высота символов
+				0,                       // ширина символов
+				0,                       // угол ориентации
+				0,                       // угол начертания
+				FW_NORMAL,               //	толщина шрифта
+				FALSE,                   // курсив
+				FALSE,                   // подчеркивание
+				FALSE,                   // зачеркивание
+				DEFAULT_CHARSET,         // набор символов
+				OUT_DEFAULT_PRECIS,      // точность вывода
+				CLIP_DEFAULT_PRECIS,     // точность отсеченияd
+				DEFAULT_QUALITY,         // качество вывода
+				DEFAULT_PITCH | FF_SWISS,// шаг шрифта и семейство
+				"Arial"                  // имя шрифта
+			);
+
+			// применяем шрифт ко всем кнопкам
+			for (INT i = 0; i < 16; ++i) 
+			{
+				SendMessage(g_hButtons[i], WM_SETFONT, (WPARAM)g_hFont, TRUE);
+			}
 		}
 		break;
 		case WM_DRAWITEM:
@@ -205,16 +235,22 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					RECT rect = pDIS->rcItem;
 
 					// Рисуем закругленную кнопку
-					char buttonText[256];
-					GetWindowText((HWND)pDIS->hwndItem, buttonText, sizeof(buttonText));
-					DrawRoundedButton(hdc, rect, 20, buttonText);
+					CHAR bText[256];
+					GetWindowText((HWND)pDIS->hwndItem, bText, sizeof(bText));
+					DrawRoundedButton(hdc, rect, 20, bText);
 					return TRUE;
 				}
 			}
 		}
-		break;
+			break;
 		case WM_DESTROY:
+		{
+			if (g_hFont)
+			{
+				DeleteObject(g_hFont);
+			}
 			PostQuitMessage(0);
+		}
 			break;
 		case WM_CLOSE:
 			DestroyWindow(hwnd);
@@ -227,21 +263,21 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void DrawRoundedButton(HDC hdc, RECT rect, int radius, const char* text) 
 {
-	HBRUSH hBrush = CreateSolidBrush(RGB(100, 150, 255)); // Цвет фона кнопки
-	HPEN hPen = CreatePen(PS_SOLID, 1, RGB(50, 100, 200)); // Цвет границы
+	HBRUSH hBrush = CreateSolidBrush(RGB(36, 162, 215)); // цвет фона кнопки rgb(97,147,35) green
+	HPEN hPen = CreatePen(PS_SOLID, 1, RGB(50, 100, 200)); // цвет границы
 
 	HGDIOBJ oldBrush = SelectObject(hdc, hBrush);
 	HGDIOBJ oldPen = SelectObject(hdc, hPen);
 
-	// Рисуем закругленный прямоугольник
+	// рисуем закругленный прямоугольник
 	RoundRect(hdc, rect.left, rect.top, rect.right, rect.bottom, radius, radius);
 
-	// Устанавливаем цвет текста и выводим текст кнопки
+	// устанавливаем цвет текста и выводим текст кнопки
 	SetTextColor(hdc, RGB(255, 255, 255));
 	SetBkMode(hdc, TRANSPARENT);
 	DrawText(hdc, text, -1, &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
-	// Возвращаем старые ресурсы
+	// возвращаем старые ресурсы
 	SelectObject(hdc, oldBrush);
 	SelectObject(hdc, oldPen);
 	DeleteObject(hBrush);
