@@ -122,7 +122,7 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				g_i_START_X, g_i_START_Y,//10, 10,
 				400, 22,
 				hwnd,
-				(HMENU)1000,
+				(HMENU)999,
 				GetModuleHandle(NULL),
 				NULL
 			);
@@ -172,14 +172,16 @@ INT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					GetWindowText((HWND)lParam, label, sizeof(label));
 					g_sExpression += label;
 				}
-				else if (buttonId >= IDC_BUTTON_PLUS && buttonId <= IDC_BUTTON_SLASH)
+				if (buttonId >= IDC_BUTTON_PLUS && buttonId <= IDC_BUTTON_SLASH)
 				{
 					// операторы
-					CHAR label[2];
+					CHAR operators[] = { '+', '-', '*', '/' };
+					g_sExpression += operators[buttonId - IDC_BUTTON_PLUS];
+					/*CHAR label[2];
 					GetWindowText((HWND)lParam, label, sizeof(label));
-					g_sExpression += label;
+					g_sExpression += label;*/
 				}
-				else if (buttonId == IDC_BUTTON_EQUAL)
+				if (buttonId == IDC_BUTTON_EQUAL)
 				{
 					// calculate expression
 					try
@@ -328,7 +330,5 @@ void DrawRoundedButton(HDC hdc, RECT rect, int radius, const char* text)
 double EvaluateExpression(const std::string& expression)
 {
 	return 77777.777;
-	/*std::istringstream iss(expression);
-	std::stack<double> values;
-	std::stack<char> ops;*/
+
 }
